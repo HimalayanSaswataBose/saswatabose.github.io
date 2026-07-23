@@ -311,11 +311,15 @@ section { position: relative; padding-block: clamp(4.5rem, 10vw, 8rem); }
 }
 .hero h1 span {
   display: block;
-  overflow: hidden;
+  /* The rise-in animation needs the line hidden until it climbs into place, so
+     this clips at the top and bottom edges exactly as overflow:hidden did — but
+     leaves the sides open, so a long name is never cut off mid-letter. */
+  clip-path: inset(0 -100vw 0 -100vw);
   padding-bottom: 0.06em;
 }
 .hero h1 span b {
   display: block;
+  width: max-content;
   font-weight: inherit;
   transform: translateY(105%);
   animation: rise 1.05s var(--ease) forwards;
@@ -2789,6 +2793,39 @@ function startBrain(box, canvas) {
       card.style.setProperty("--my", event.clientY - box.top + "px");
     });
   });
+
+  /* -------------------------------------------------------------------------
+     5. Headline fit
+
+     The name is set in Syne, a wide face, inside a column with a fixed cap.
+     Whether "SASWATA" fits depends on the viewport, the reader's default font
+     size, and whether Syne has finished downloading — so rather than guess a
+     size that always works, measure what was actually rendered and step down
+     only when it would overrun. When it already fits, this changes nothing.
+     ------------------------------------------------------------------------- */
+
+  var headline = document.querySelector(".hero h1");
+
+  function fitHeadline() {
+    if (!headline) return;
+
+    headline.style.fontSize = ""; // start again from the stylesheet's size
+    var available = headline.clientWidth;
+    if (!available) return;
+
+    var widest = 0;
+    headline.querySelectorAll("span > b").forEach(function (line) {
+      widest = Math.max(widest, line.getBoundingClientRect().width);
+    });
+    if (!widest || widest <= available) return;
+
+    var size = parseFloat(window.getComputedStyle(headline).fontSize);
+    headline.style.fontSize = (size * (available - 1)) / widest + "px";
+  }
+
+  fitHeadline();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeadline);
+  window.addEventListener("resize", fitHeadline);
 
   /* -------------------------------------------------------------------------
      Start the hero animation. startBrain is defined in the script above.
