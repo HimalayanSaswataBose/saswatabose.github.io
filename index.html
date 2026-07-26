@@ -272,7 +272,16 @@ section { position: relative; padding-block: clamp(4.5rem, 10vw, 8rem); }
   position: absolute;
   inset: 0;
   z-index: 1;
+  /* Long, unhurried fade — see the .settled note below. Slow enough that the
+     dimming is never itself an event that pulls the eye. */
+  transition: opacity 2.6s var(--ease);
 }
+/* The animation loops forever, and peripheral vision never stops noticing
+   motion. So it plays at full strength long enough to be seen properly, then
+   recedes to sit behind the text instead of competing with it. It keeps
+   running the whole time — this only lowers its voice. Hovering the hero
+   brings it back up. */
+.field.settled { opacity: 0.42; }
 .field canvas {
   position: absolute;
   inset: 0;
@@ -1406,7 +1415,16 @@ footer .sp { margin-left: auto; }
                 <a href="https://bccl.iiit.ac.in/coder/" target="_blank" rel="noreferrer">bccl.iiit.ac.in/coder</a>
               </div>
             </article>
-            <article class="card" style="--i: 3;" data-group="lang">
+            <article class="card" style="--i: 3;" data-group="applied">
+              <span class="tag">clinical</span>
+              <h3>EDF2PDF — sleep reports from raw polysomnography</h3>
+              <p>An end-to-end system that turns raw patient PSG recordings into a curated clinical sleep report. Built in-house and deployed for the NIMHANS sleep and stroke collaboration.</p>
+              <div class="foot">
+                <span>Dec 2025 — May 2026</span>
+                <a href="https://bccl.iiit.ac.in/edfpdf" target="_blank" rel="noreferrer">bccl.iiit.ac.in/edfpdf</a>
+              </div>
+            </article>
+            <article class="card" style="--i: 4;" data-group="lang">
               <span class="tag">nlp</span>
               <h3>Memory-augmented transformer for dialect translation</h3>
               <p>Built the first Barendri Bangla dataset and a memory-augmented transformer that gained 4 SacreBLEU points translating Chittagong Bangla into standard Bangla.</p>
@@ -1415,21 +1433,13 @@ footer .sp { margin-left: auto; }
                 <a href="https://github.com/HimalayanSaswataBose/anlp-project-MemoryTransformer" target="_blank" rel="noreferrer">Repository</a>
               </div>
             </article>
-            <article class="card" style="--i: 4;" data-group="brain">
+            <article class="card" style="--i: 5;" data-group="brain">
               <span class="tag">neuromorphic</span>
               <h3>ANN architectures for spiking sleep-stage classification</h3>
               <p>Converted ANN sleep stagers to spiking networks and measured a roughly 10% accuracy drop under minimal conversion — evidence that SNNs need their own architectures rather than borrowed ones.</p>
               <div class="foot">
                 <span>Aug — Dec 2025</span>
                 <a href="https://github.com/HimalayanSaswataBose/ANN2SNN_SleepStaging" target="_blank" rel="noreferrer">Repository</a>
-              </div>
-            </article>
-            <article class="card" style="--i: 5;" data-group="applied">
-              <span class="tag">clinical</span>
-              <h3>EDF2PDF — sleep reports from raw polysomnography</h3>
-              <p>An end-to-end system that turns raw patient PSG recordings into a curated clinical sleep report. Built in-house and deployed for the NIMHANS sleep and stroke collaboration.</p>
-              <div class="foot">
-                <span>Dec 2025 — May 2026</span>
               </div>
             </article>
             <article class="card" style="--i: 6;" data-group="applied">
@@ -1467,22 +1477,22 @@ footer .sp { margin-left: auto; }
           <div class="tl">
             <article class="job rev" style="--dot: var(--beam); --d: 0ms;">
               <div>
-                <h3>Student Researcher <span class="org">· Brain, Cognition and Computation Lab, IIIT Hyderabad</span></h3>
-                <span class="where">Advised by Prof. S. Bapi Raju</span>
-                <p>The home lab. Brain-computer interaction, sleep studies and cognitive science: EEG sleep staging, artefact detection and clinical explainability with NIMHANS Bangalore and UCL London, alongside how speech and language are encoded and decoded from EEG and MEG.</p>
-              </div>
-              <div class="span">
-                <span class="live">Jun 2024 — present</span>
-              </div>
-            </article>
-            <article class="job rev" style="--dot: var(--beam); --d: 55ms;">
-              <div>
                 <h3>Research Intern <span class="org">· BCBL — Basque Center on Cognition, Brain and Language</span></h3>
                 <span class="where">Basque Country, Spain</span>
                 <p>MEG-based brain decoding systems with Prof. Nicola Molinaro in the BRhyCo Lab.</p>
               </div>
               <div class="span">
                 <span class="live">May 2026 — present</span>
+              </div>
+            </article>
+            <article class="job rev" style="--dot: var(--beam); --d: 55ms;">
+              <div>
+                <h3>Student Researcher <span class="org">· Brain, Cognition and Computation Lab, IIIT Hyderabad</span></h3>
+                <span class="where">Advised by Prof. S. Bapi Raju</span>
+                <p>The home lab. Brain-computer interaction, sleep studies and cognitive science: EEG sleep staging, artefact detection and clinical explainability with NIMHANS Bangalore and UCL London, alongside how speech and language are encoded and decoded from EEG and MEG.</p>
+              </div>
+              <div class="span">
+                <span class="live">Jun 2024 — present</span>
               </div>
             </article>
             <article class="job rev" style="--dot: var(--muted); --d: 110ms;">
@@ -1783,7 +1793,7 @@ footer .sp { margin-left: auto; }
               <span class="yr">2023</span>
             </div>
             <div class="award">
-              <span class="rk">AIR 5382<br>(99.55 %ile)</span>
+              <span class="rk">AIR 5382 (99.55 percentile)</span>
               <span class="nm">JEE Mains</span>
               <span class="yr">2023</span>
             </div>
@@ -2828,10 +2838,47 @@ function startBrain(box, canvas) {
   window.addEventListener("resize", fitHeadline);
 
   /* -------------------------------------------------------------------------
-     Start the hero animation. startBrain is defined in the script above.
+     6. Letting the hero settle
+
+     The animation is a 16-second loop, so a visitor who arrives and reads the
+     hero sees the whole network-to-brain morph inside the first cycle. After
+     that it has made its point, and anything still moving in the corner of the
+     eye competes with the sentence someone is trying to read.
+
+     So: full strength for one complete cycle, then it eases back and stays
+     running quietly behind the text. Hovering the hero wakes it up again —
+     the units fire where the pointer goes, and that should be at full
+     strength. Under reduced motion the canvas is a single still frame, so
+     there is nothing to settle and this does not run.
      ------------------------------------------------------------------------- */
 
   var field = document.querySelector(".field");
+  var hero = document.querySelector(".hero");
+  var CYCLE = 16000; // matches PERIOD in the animation above
+  var calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (field && hero && !calm) {
+    var settleTimer = window.setTimeout(function () {
+      field.classList.add("settled");
+    }, CYCLE + 2000); // one full loop, plus a beat
+
+    hero.addEventListener("pointerenter", function () {
+      window.clearTimeout(settleTimer);
+      field.classList.remove("settled");
+    });
+
+    hero.addEventListener("pointerleave", function () {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(function () {
+        field.classList.add("settled");
+      }, 1200);
+    });
+  }
+
+  /* -------------------------------------------------------------------------
+     Start the hero animation. startBrain is defined in the script above.
+     ------------------------------------------------------------------------- */
+
   if (field && typeof startBrain === "function") {
     startBrain(field, field.querySelector("canvas"));
   }
